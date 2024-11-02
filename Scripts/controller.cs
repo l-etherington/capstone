@@ -15,10 +15,10 @@ public class controller : MonoBehaviour
     public Vector2 gravityDirection; // new Vector2(0, -9.81f) could be the default
     private Rigidbody2D _rb;
     public GameObject trigger_collider;
-    public GameObject top;
-    public GameObject right;
-    public GameObject left;
-    public GameObject bottom;
+    // public GameObject top;
+    // public GameObject right;
+    // public GameObject left;
+    // public GameObject bottom;
 
     // new public Vector2[,] movement = {
     //     {new Vector2(1,0), new Vector2(-1,0), new Vector2(0,1)},
@@ -48,24 +48,28 @@ public class controller : MonoBehaviour
                 {"Right", new Vector2(1,0)},
                 {"Left", new Vector2(-1,0)},
                 {"Up", new Vector2(0,1)},
+                {"Down", new Vector2(0,-1)},
             }},
             {135,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(0,1)},
                 {"Left", new Vector2(0,-1)},
                 {"Up", new Vector2(1,0)},
+                {"Down", new Vector2(-1,0)},
             }},
             {225,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(-1,0)},
                 {"Left", new Vector2(1,0)},
                 {"Up", new Vector2(0,-1)},
+                {"Down", new Vector2(0,1)},
             }},
             {305,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(0,-1)},
                 {"Left", new Vector2(0,1)},
                 {"Up", new Vector2(-1,0)},
+                {"Down", new Vector2(1,0)},
             }}
         };
 
@@ -77,7 +81,8 @@ public class controller : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
     }
 
-    void FixedUpdate(){  // use FixedUpdate for physics stuff
+    // use FixedUpdate for physics stuff
+    void FixedUpdate(){  
         Physics2D.gravity = gravityDirection;
 
         // transform.Translate(Vector2.right * Input.GetAxis("Horizontal") * speed * Time.deltaTime);
@@ -92,21 +97,25 @@ public class controller : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   
-        playerOnGround = trigger_collider.GetComponent<GroundCheckScript>().onGround;
+        // playerOnGround = trigger_collider.GetComponent<GroundCheckScript>().onGround;
 
         string key = "";
         if(Input.GetKey(KeyCode.LeftArrow)){
-            Debug.Log("left");
+            // Debug.Log("left");
             key = "Left";
         }
         if(Input.GetKey(KeyCode.UpArrow)){
-            Debug.Log("up");
-            Debug.Log(transform.rotation.eulerAngles);
+            // Debug.Log("up");
+            // Debug.Log(transform.rotation.eulerAngles);
             key = "Up";
         }
         if(Input.GetKey(KeyCode.RightArrow)){
-            Debug.Log("right");
+            // Debug.Log("right");
             key = "Right";
+        }
+        if(Input.GetKey(KeyCode.DownArrow)){
+            // Debug.Log("left");
+            key = "Down";
         }
 
         // get orientation
@@ -127,26 +136,26 @@ public class controller : MonoBehaviour
         // determine direction of movement based on key & orientation
         Vector3 dn = transform.TransformDirection(Vector3.down);
         if(key != ""){
-            Debug.Log("---------------------angle:");
-            Debug.Log(angle);
+            // Debug.Log("---------------------angle:");
+            // Debug.Log(angle);
             Vector2 movement_vec = movement[angle][key];
 
             // check if intended direction is facing opposite direction as gravity
             if((movement_vec[0]==0) != (Physics2D.gravity[0]==0)){
                 // non-jump movement
-                Debug.Log("move horizontal, set velocity to:");
+                // Debug.Log("move horizontal, set velocity to:");
                 // Debug.Log(movement_vec * speed * Time.deltaTime);
                 // Debug.Log(movement_vec);
-                Debug.Log(speed);
+                // Debug.Log(speed);
                 // Debug.Log(Time.deltaTime);
                 // _rb.velocity = movement_vec * speed;
                 GetComponent<Rigidbody2D>().MovePosition(new Vector2(transform.position.x, transform.position.y) + movement_vec * speed * Time.deltaTime);
                 
             } else {
                 // jump movement
-                if (playerOnGround){
-                    Debug.Log("JUMP!");
-                    GetComponent<Rigidbody2D>().AddForce(movement_vec * 10000 * Time.deltaTime, ForceMode2D.Impulse); 
+                if (trigger_collider.GetComponent<GroundCheckScript>().onGround){
+                    // Debug.Log("JUMP!");
+                    GetComponent<Rigidbody2D>().AddForce(movement_vec * 50000 * Time.deltaTime, ForceMode2D.Impulse); 
                 }
             };
         }
@@ -168,11 +177,6 @@ public class controller : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collided)
     {
-        if (collided.CompareTag("ground"))
-        {
-            Debug.Log("Entered ground");
-            // playerOnGround = true;
-        }
         if (collided.CompareTag("UpArrow"))
         {
             gravityDirection = new Vector2(0, 100);
@@ -186,7 +190,7 @@ public class controller : MonoBehaviour
         if (collided.CompareTag("RightArrow"))
         {
             gravityDirection = new Vector2(100, 0);
-            _rb.gravityScale = 11;
+            _rb.gravityScale = 5;
         }
         if (collided.CompareTag("LeftArrow"))
         {
@@ -197,11 +201,6 @@ public class controller : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D collided)
     {
-        //Destroy the coin if Object tagged Player comes in contact with it
-        if (collided.CompareTag("ground"))
-        {
-            Debug.Log("exited ground");
-            // playerOnGround = false;
-        }
+
     }
 }

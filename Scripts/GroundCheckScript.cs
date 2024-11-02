@@ -5,17 +5,13 @@ using UnityEngine;
 public class GroundCheckScript : MonoBehaviour
 {
 
-    public bool onGround = false;
+    public bool onGround = true;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    void Start(){}
     
     void OnTriggerEnter2D(Collider2D col)
     {
-        //Destroy the coin if Object tagged Player comes in contact with it
+        // When trigger meets collider, if ground, change onGround variable
         if (col.CompareTag("ground"))
         {
             onGround = true;
@@ -24,7 +20,7 @@ public class GroundCheckScript : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D col)
     {
-        //Destroy the coin if Object tagged Player comes in contact with it
+        // Change onGround variable once leaving ground
         if (col.CompareTag("ground"))
         {
             onGround = false;
@@ -32,7 +28,5 @@ public class GroundCheckScript : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-    }
+    void Update(){}
 }
