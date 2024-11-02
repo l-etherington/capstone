@@ -10,6 +10,7 @@ public class SC_2DCoin : MonoBehaviour
 {
     //Keep track of total picked coins (Since the value is static, it can be accessed at "SC_2DCoin.totalCoins" from any script)
     public static int totalCoins = 0; 
+    public string canDestroyTag;
 
     void Awake()
     {
@@ -21,7 +22,7 @@ public class SC_2DCoin : MonoBehaviour
     void OnTriggerEnter2D(Collider2D c2d)
     {
         //Destroy the coin if Object tagged Player comes in contact with it
-        if (c2d.CompareTag("Player"))
+        if (c2d.CompareTag(canDestroyTag))
         {
             //Add coin to counter
             totalCoins++;
