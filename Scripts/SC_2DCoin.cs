@@ -28,7 +28,7 @@ public class SC_2DCoin : MonoBehaviour
             totalCoins++;
 
             //Test: Print total number of coins
-            Debug.Log("You currently have " + SC_2DCoin.totalCoins + " Coins.");
+            Debug.Log(canDestroyTag + " currently has " + SC_2DCoin.totalCoins + " tokens.");
             //Destroy coin
             Destroy(gameObject);
         }

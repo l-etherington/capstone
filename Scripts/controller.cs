@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections.Generic; 
+using System;
 
 public class controller : MonoBehaviour
 {
-
     public float speed;
     public float jump_height;
     public GameObject winText;
@@ -20,56 +20,37 @@ public class controller : MonoBehaviour
     // public GameObject left;
     // public GameObject bottom;
 
-    // new public Vector2[,] movement = {
-    //     {new Vector2(1,0), new Vector2(-1,0), new Vector2(0,1)},
-    //     {new Vector2(0,-1), new Vector2(0,1), new Vector2(-1,0)},
-    //     {new Vector2(0,1), new Vector2(0,-1), new Vector2(1,0)},
-    //     {new Vector2(0,-1), new Vector2(0,1), new Vector2(-1,0)}
-    // };
-
-    // new public Dictionary<string, Vector2>[] movement = {
-    //     new Dictionary<string, Vector2>{
-    //         {"Right", new Vector2(1,0)},
-    //         {"Left", new Vector2(1,0)},
-    //         {"Up", new Vector2(0,1)},
-    //     },
-    //     new Dictionary<string, Vector2>{
-    //         {"Right", new Vector2(0,-1)},
-    //         {"Left", new Vector2(0,1)},
-    //         {"Up", new Vector2(-1,0)},
-    //     }
-    // };
 
     // maps orientation (relative to map) + inputted key to direction (relative to person)
     new public Dictionary<int, Dictionary<string, Vector2>> movement = 
         new Dictionary<int, Dictionary<string, Vector2>>{
-            {45,
+            {0,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(1,0)},
                 {"Left", new Vector2(-1,0)},
                 {"Up", new Vector2(0,1)},
                 {"Down", new Vector2(0,-1)},
             }},
-            {135,
+            {90,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(0,1)},
                 {"Left", new Vector2(0,-1)},
-                {"Up", new Vector2(1,0)},
-                {"Down", new Vector2(-1,0)},
+                {"Up", new Vector2(-1,0)},
+                {"Down", new Vector2(1,0)},
             }},
-            {225,
+            {180,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(-1,0)},
                 {"Left", new Vector2(1,0)},
                 {"Up", new Vector2(0,-1)},
                 {"Down", new Vector2(0,1)},
             }},
-            {305,
+            {270,
             new Dictionary<string, Vector2>{
                 {"Right", new Vector2(0,-1)},
                 {"Left", new Vector2(0,1)},
-                {"Up", new Vector2(-1,0)},
-                {"Down", new Vector2(1,0)},
+                {"Up", new Vector2(1,0)},
+                {"Down", new Vector2(-1,0)},
             }}
         };
 
@@ -119,61 +100,42 @@ public class controller : MonoBehaviour
         }
 
         // get orientation
-        int angle = 45;
-        while (true)
-        {
-            if(angle > 305){
-                angle = 45;
-                break;
+        int[] angleList = {0, 90, 180, 270};
+        double[] bestAngle = {0, 400};
+        for (int i=0; i<angleList.Length; i++){
+            double diff = Math.Abs(transform.rotation.eulerAngles[2] - (double)angleList[i]);
+            if (diff < bestAngle[1]){
+                bestAngle[0] = (double)i;
+                bestAngle[1] = diff;
             }
-            if(transform.rotation.eulerAngles[2] < angle){
-                break;
-            }else{
-                angle = angle + 90;
-            };
         }
+        int angle = angleList[(int)bestAngle[0]];
 
         // determine direction of movement based on key & orientation
         Vector3 dn = transform.TransformDirection(Vector3.down);
         if(key != ""){
             // Debug.Log("---------------------angle:");
-            // Debug.Log(angle);
+            Debug.Log(transform.rotation.eulerAngles[2]);
+            Debug.Log(angle);
             Vector2 movement_vec = movement[angle][key];
 
-            // check if intended direction is facing opposite direction as gravity
+            // check if intended direction is facing opposite direction as gravity: non-jump movement
             if((movement_vec[0]==0) != (Physics2D.gravity[0]==0)){
-                // non-jump movement
-                // Debug.Log("move horizontal, set velocity to:");
-                // Debug.Log(movement_vec * speed * Time.deltaTime);
-                // Debug.Log(movement_vec);
-                // Debug.Log(speed);
-                // Debug.Log(Time.deltaTime);
-                // _rb.velocity = movement_vec * speed;
-                GetComponent<Rigidbody2D>().MovePosition(new Vector2(transform.position.x, transform.position.y) + movement_vec * speed * Time.deltaTime);
+                // GetComponent<Rigidbody2D>().MovePosition(new Vector2(transform.position.x, transform.position.y) + movement_vec * speed * Time.deltaTime);
+                GetComponent<Rigidbody2D>().AddForce(movement_vec * speed);
                 
             } else {
-                // jump movement
-                if (trigger_collider.GetComponent<GroundCheckScript>().onGround){
-                    // Debug.Log("JUMP!");
-                    GetComponent<Rigidbody2D>().AddForce(movement_vec * 50000 * Time.deltaTime, ForceMode2D.Impulse); 
+                List<Collider2D> collidingWith = new List<Collider2D>();
+                int numColliding = GetComponent<Rigidbody2D>().Overlap(transform.position, 0, collidingWith);
+                for(int i=0; i<numColliding; i++){
+                    if(collidingWith[i].CompareTag("ground")){
+                        // jump movement
+                        GetComponent<Rigidbody2D>().AddForce(movement_vec * jump_height, ForceMode2D.Impulse); 
+                    }
                 }
             };
         }
-        // _rb.velocity = Input.GetAxis("Horizontal") * movement_vec * speed; 
-
-        //transform.rotation = Quaternion.identity;
-        // if(playerOnGround && Input.GetButton("Jump")){
-        //     Debug.Log("-----------------------------------------rotation");
-        //     Debug.Log(transform.rotation.eulerAngles);
-        //     Debug.Log("-----------------------------------------gravity");
-        //     Debug.Log(Physics2D.gravity);
-        //     Debug.Log("-----------------------------------------velocity");
-        //     Debug.Log(_rb.velocity);
-            // GetComponent<Rigidbody2D>().AddForce(transform.up * 10000 * Time.deltaTime, ForceMode2D.Impulse);
-            //transform.Translate(Vector2.up * Input.GetAxis("Jump") * jump_height * Time.deltaTime);
-            //40000
        }
-        //transform.Translate(Vector2.up * Input.GetAxis("Vertical") * jump_height * Time.deltaTime);
 
     void OnTriggerEnter2D(Collider2D collided)
     {

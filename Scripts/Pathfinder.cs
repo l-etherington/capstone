@@ -10,6 +10,7 @@ public class Pathfinder : MonoBehaviour
     public GoalTracker goals;
     public MakeMap map;
     public int[,] goalList = Level1.goblin_tokens;
+    public bool floorsSwitched = false;
     
     private int manhattan(Vector2Int pos, Vector2Int goal)
     {
@@ -66,5 +67,37 @@ public class Pathfinder : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+    }
+
+    void OnTriggerEnter2D(Collider2D col){
+        if (col.CompareTag("button") && floorsSwitched == false)
+        {
+            switchFloorsDo(map.switchFloors["H"], "H");
+            switchFloorsDo(map.switchFloors["V"], "V");
+            switchFloorsDo(col.gameObject.hfloors, "H");
+            switchFloorsDo(col.gameObject.vfloors, "H");
+        }
+    }
+
+    void switchFloorsDo(List<GameObject> lst, string dir){
+
+        int xRes = (int)map.mapSize[0] / MakeMap.horizontal.GetLength(1);
+        int yRes = (int)map.mapSize[1] / MakeMap.horizontal.GetLength(0);
+        
+        for(int i=0; i<lst.Count; i++){
+            
+            GameObject block = lst[i];
+            Vector3 position = block.transform.position;
+            Vector3 scale;
+            if(dir == "H"){
+                scale = new Vector3(xRes/4, yRes, 1);
+                position.x = position.x - 5;
+            }else{
+                scale = new Vector3(xRes, yRes/4, 1);
+                position.x = position.x + 5;
+            }
+            block.transform.localScale = scale;
+            block.transform.position = position;
+        }
     }
 }
