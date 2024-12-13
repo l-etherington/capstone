@@ -8,18 +8,15 @@ public class controller : MonoBehaviour
 {
     public float speed;
     public float jump_height;
-    public GameObject winText;
     private Transform camera;
-    // public GameObject groundCheck;
     public bool playerOnGround = true;
     public Vector2 gravityDirection; // new Vector2(0, -9.81f) could be the default
     private Rigidbody2D _rb;
     public GameObject trigger_collider;
-    // public GameObject top;
-    // public GameObject right;
-    // public GameObject left;
-    // public GameObject bottom;
-
+    public GameObject enemy;
+    public MakeMap map;
+    public LevelManager ParentLevelManager; 
+    public Level level;
 
     // maps orientation (relative to map) + inputted key to direction (relative to person)
     new public Dictionary<int, Dictionary<string, Vector2>> movement = 
@@ -57,23 +54,14 @@ public class controller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gravityDirection = new Vector2(0, -9.81f);
-        winText.SetActive(false);
-        _rb = GetComponent<Rigidbody2D>();
+        gravityDirection = new Vector2(0, -1);
+        _rb = this.GetComponent<Rigidbody2D>();
+        level = ParentLevelManager.currentLevel;
     }
 
     // use FixedUpdate for physics stuff
     void FixedUpdate(){  
-        Physics2D.gravity = gravityDirection;
-
-        // transform.Translate(Vector2.right * Input.GetAxis("Horizontal") * speed * Time.deltaTime);
-    //     if(playerOnGround && Input.GetKeyDown(KeyCode.Space)){
-    //         Debug.Log("jumping");
-    //         GetComponent<Rigidbody2D>().AddForce(transform.up * 20000 * Time.deltaTime, ForceMode2D.Impulse);
-    //         playerOnGround = false;
-    //         //transform.Translate(Vector2.up * Input.GetAxis("Jump") * jump_height * Time.deltaTime);
-    //         //40000
-    //    }
+        Physics2D.gravity = gravityDirection * _rb.gravityScale;
     }
     // Update is called once per frame
     void Update()
@@ -82,20 +70,15 @@ public class controller : MonoBehaviour
 
         string key = "";
         if(Input.GetKey(KeyCode.LeftArrow)){
-            // Debug.Log("left");
             key = "Left";
         }
         if(Input.GetKey(KeyCode.UpArrow)){
-            // Debug.Log("up");
-            // Debug.Log(transform.rotation.eulerAngles);
             key = "Up";
         }
         if(Input.GetKey(KeyCode.RightArrow)){
-            // Debug.Log("right");
             key = "Right";
         }
         if(Input.GetKey(KeyCode.DownArrow)){
-            // Debug.Log("left");
             key = "Down";
         }
 
@@ -114,9 +97,6 @@ public class controller : MonoBehaviour
         // determine direction of movement based on key & orientation
         Vector3 dn = transform.TransformDirection(Vector3.down);
         if(key != ""){
-            // Debug.Log("---------------------angle:");
-            Debug.Log(transform.rotation.eulerAngles[2]);
-            Debug.Log(angle);
             Vector2 movement_vec = movement[angle][key];
 
             // check if intended direction is facing opposite direction as gravity: non-jump movement
@@ -139,25 +119,37 @@ public class controller : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collided)
     {
-        if (collided.CompareTag("UpArrow"))
-        {
-            gravityDirection = new Vector2(0, 100);
-            _rb.gravityScale = 11;
+        if(collided.CompareTag("DirectionArrow")){
+            Vector3 arrowDirection = collided.gameObject.transform.rotation.eulerAngles;
+
+            // up
+            if (arrowDirection == new Vector3(0, 0, 0))
+            {
+                gravityDirection = new Vector2(0, 1);
+                enemy.GetComponent<Pathfinder>().recalculate(false, level, map.gravityUpGraph);
+            }
+            // down
+            if (arrowDirection == new Vector3(0, 0, 180))
+            {
+                gravityDirection = new Vector2(0, -1);
+                enemy.GetComponent<Pathfinder>().recalculate(false, level, map.gravityDownGraph);
+            }
+            // right
+            if (arrowDirection == new Vector3(0, 0, 270))
+            {
+                gravityDirection = new Vector2(1, 0);
+                enemy.GetComponent<Pathfinder>().recalculate(false, level, map.gravityRightGraph);
+            }
+            // left
+            if (arrowDirection == new Vector3(0, 0, 90))
+            {
+                gravityDirection = new Vector2(-1, 0);
+                enemy.GetComponent<Pathfinder>().recalculate(false, level, map.gravityLeftGraph);
+            }
         }
-        if (collided.CompareTag("DownArrow"))
-        {
-            gravityDirection = new Vector2(0, -100);
-            _rb.gravityScale = 11;
-        }
-        if (collided.CompareTag("RightArrow"))
-        {
-            gravityDirection = new Vector2(100, 0);
-            _rb.gravityScale = 5;
-        }
-        if (collided.CompareTag("LeftArrow"))
-        {
-            gravityDirection = new Vector2(-100, 0);
-            _rb.gravityScale = 11;
+
+        if(collided.CompareTag("EndZone")){
+            enemy.GetComponent<Pathfinder>().recalculate(true, level);
         }
     }
 

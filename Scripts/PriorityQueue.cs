@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 public class PriorityQueue<T>
 {
-    public List<(T item, int priority)> elements = new List<(T, int)>();
+    public List<(T item, double priority)> elements = new List<(T, double)>();
 
-    public void Enqueue(T item, int priority)
+    public void Enqueue(T item, double priority)
     {
         elements.Add((item, priority));
         int childIndex = elements.Count - 1;

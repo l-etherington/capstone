@@ -6,19 +6,20 @@ public class Endzone : MonoBehaviour
 {
     //Keep track of total picked coins (Since the value is static, it can be accessed at "SC_2DCoin.totalCoins" from any script)
     public int coinsCollected;
-    public static int totalCoins = Level1.goat_tokens.Length;
-    public GameObject coinCounter;
-    public bool canWin = false;
-    public GameObject winText;
+    public LevelManager ParentLevelManager;
+    public Level level;
+    public GameObject Player;
+    public bool canWin;
 
-    void Awake()
+    public void Start()
     {
-        Debug.Log(totalCoins);
+        level = ParentLevelManager.currentLevel;
+        canWin = false;
     }
 
     void Update()
     {
-        if(coinCounter.GetComponent<PlayerCollider>().coinsCollected == PlayerCollider.totalCoins-1){
+        if(Player.GetComponent<PlayerCollider>().coinsCollected == Player.GetComponent<PlayerCollider>().totalCoins-1){
             gameObject.transform.GetComponent<SpriteRenderer>().material.color = Color.green;
             canWin = true;
         }
@@ -27,7 +28,9 @@ public class Endzone : MonoBehaviour
     void OnTriggerEnter2D(Collider2D col)
     {
         if (col.CompareTag("Player") && canWin){
-            winText.SetActive(true);
+            ParentLevelManager.ChangeLevel();
+            gameObject.transform.GetComponent<SpriteRenderer>().material.color = Color.white;
+            canWin = false;
         }
 
     }

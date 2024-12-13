@@ -11,11 +11,16 @@ public class PlayerCollider : MonoBehaviour
 {
     //Keep track of total picked coins (Since the value is static, it can be accessed at "SC_2DCoin.totalCoins" from any script)
     public int coinsCollected = 0;
-    public static int totalCoins = Level1.goat_tokens.Length/2;
+    public LevelManager ParentLevelManager;
+    public static Level level;
     public TMP_Text coinText;
+    public int totalCoins;
 
-    void Awake()
+    public void Awake()
     {
+        coinsCollected = 0;
+        level = ParentLevelManager.currentLevel;
+        totalCoins = level.goat_tokens.Count;
         coinText.text = coinsCollected.ToString();
     }
 
@@ -27,10 +32,6 @@ public class PlayerCollider : MonoBehaviour
             //Add coin to counter
             coinsCollected++;
             coinText.text = coinsCollected.ToString();
-        }
-
-        if (col.CompareTag("EndZone") && coinsCollected == totalCoins-1){
-            Debug.Log("You win!");
         }
 
     }
